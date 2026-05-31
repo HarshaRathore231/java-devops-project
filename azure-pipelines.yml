@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -14,6 +9,26 @@ variables:
 
 steps:
 
+# ✅ Step 1: Build Java project
+- task: Maven@4
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'clean package'
+
+# ✅ Step 2: Check JAR file (debug)
+- script: |
+    ls -l target/
+  displayName: Check JAR File
+
+# ✅ Step 3: Build Docker image
+- script: |
+    docker build -t $(IMAGE_NAME) .
+  displayName: Build Docker Image
+
+# ✅ Step 4: Verify Docker image
+- script: |
+    docker images
+  displayName: Show Docker Images
 # ✅ Step 1: Build Java project
 - task: Maven@3
   inputs:
