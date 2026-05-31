@@ -11,4 +11,3 @@ public class HelloController {
         return "Hello DevOps Project 🚀";
     }
 }
-
