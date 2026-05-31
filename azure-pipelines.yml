@@ -5,7 +5,9 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  IMAGE_NAME: java-app
+- group: aws-credentials   # ✅ link variable group
+- name: IMAGE_NAME
+  value: java-app
 
 steps:
 
@@ -20,7 +22,7 @@ steps:
     docker build -t $(IMAGE_NAME) .
   displayName: Build Docker
 
-# ✅ Configure AWS CLI
+# ✅ Configure AWS
 - script: |
     aws configure set aws_access_key_id $(AWS_ACCESS_KEY)
     aws configure set aws_secret_access_key $(AWS_SECRET_KEY)
@@ -33,12 +35,12 @@ steps:
     | docker login --username AWS --password-stdin $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
   displayName: Login to ECR
 
-# ✅ Tag Image
+# ✅ Tag image
 - script: |
     docker tag $(IMAGE_NAME) $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(IMAGE_NAME)
-  displayName: Tag Docker Image
+  displayName: Tag Image
 
-# ✅ Push Image
+# ✅ Push image
 - script: |
     docker push $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(IMAGE_NAME)
-  displayName: Push Docker Image
+  displayName: Push Image
