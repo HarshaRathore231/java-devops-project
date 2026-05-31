@@ -9,38 +9,36 @@ variables:
 
 steps:
 
-# ✅ Step 1: Build Java project
+# ✅ Build Java
 - task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
     goals: 'clean package'
 
-# ✅ Step 2: Check JAR file (debug)
-- script: |
-    ls -l target/
-  displayName: Check JAR File
-
-# ✅ Step 3: Build Docker image
+# ✅ Build Docker
 - script: |
     docker build -t $(IMAGE_NAME) .
-  displayName: Build Docker Image
+  displayName: Build Docker
 
-# ✅ Step 4: Verify Docker image
+# ✅ Configure AWS CLI
 - script: |
-    docker images
-  displayName: Show Docker Images
-# ✅ Step 1: Build Java project
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean package'
+    aws configure set aws_access_key_id $(AWS_ACCESS_KEY)
+    aws configure set aws_secret_access_key $(AWS_SECRET_KEY)
+    aws configure set default.region $(AWS_REGION)
+  displayName: Configure AWS
 
-# ✅ Step 2: Build Docker image
+# ✅ Login to ECR
 - script: |
-    docker build -t $(IMAGE_NAME) .
-  displayName: Build Docker Image
+    aws ecr get-login-password --region $(AWS_REGION) \
+    | docker login --username AWS --password-stdin $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+  displayName: Login to ECR
 
-# ✅ Step 3: Show Docker images (verification)
+# ✅ Tag Image
 - script: |
-    docker images
-  displayName: Show Docker Images
+    docker tag $(IMAGE_NAME) $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(IMAGE_NAME)
+  displayName: Tag Docker Image
+
+# ✅ Push Image
+- script: |
+    docker push $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(IMAGE_NAME)
+  displayName: Push Docker Image
